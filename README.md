@@ -1,3 +1,5 @@
+![Screenshot](https://github.com/nrj/LEDMatrixControl/raw/master/screenshot.png)
+
 ## Hardware
 
 *	Arduino Duemilanove *(any ATMega based board should work)*
