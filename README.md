@@ -1,4 +1,4 @@
-![Screenshot](https://github.com/nrj/LEDMatrixControl/raw/master/screenshot.png)
+![Picture](https://github.com/nrj/LEDMatrixControl/raw/master/picture.png)
 
 ## Hardware
 
