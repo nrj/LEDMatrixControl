@@ -1,10 +1,10 @@
 ## Hardware
 
-Arduino Duemilanove *(any ATMega based board should work)*
-8x8 RGB LED Matrix *(I am using [this](http://cgi.ebay.com.sg/8-8-60-60mm-RGB-Full-Color-Dot-Matrix-LED-Display-/190502734111?pt=LH_DefaultDomain_0&hash=item2c5ad9091f#ht_4697wt_689) one)*
-4 x [74HC595](http://www.sparkfun.com/products/733) Shift Registers
-8 x 330 Ohm Resistors
-16 x 220 Ohm Resistors
+*	Arduino Duemilanove *(any ATMega based board should work)*
+*	8x8 RGB LED Matrix *(I am using [this](http://cgi.ebay.com.sg/8-8-60-60mm-RGB-Full-Color-Dot-Matrix-LED-Display-/190502734111?pt=LH_DefaultDomain_0&hash=item2c5ad9091f#ht_4697wt_689) one)*
+*	4 x [74HC595](http://www.sparkfun.com/products/733) Shift Registers
+*	8 x 330 Ohm Resistors
+*	16 x 220 Ohm Resistors
 
 ## Schematic
 
