@@ -6,13 +6,15 @@
 
 #define TOTAL_ROWS 8
 #define TOTAL_COLS 8     
-#define LEDS_PER_GROUP 3
 
-#define RED 0
-#define GREEN 1
-#define BLUE 2
+#define ON true
+#define OFF false
 
-#define BUFFER_SIZE (TOTAL_ROWS * TOTAL_COLS * LEDS_PER_GROUP)
+#define RED   0x01
+#define GREEN 0x02
+#define BLUE  0x04
+
+#define BUFFER_SIZE (TOTAL_ROWS * TOTAL_COLS)
 
 unsigned int TIMER_PERIOD = 10000;
 
@@ -33,9 +35,11 @@ void drawBufferContents() {
     
     for (byte c = 0; c < TOTAL_COLS; c++) {
         
-        colROn |= *pixel++ ? _BV(c) : 0;
-        colGOn |= *pixel++ ? _BV(c) : 0;
-        colBOn |= *pixel++ ? _BV(c) : 0;    
+        colROn |= *pixel & RED    ? _BV(c) : 0;
+        colGOn |= *pixel & GREEN  ? _BV(c) : 0;
+        colBOn |= *pixel & BLUE   ? _BV(c) : 0;
+        
+        *pixel++;
     }
    
     digitalWrite(LATCH_PIN, LOW); 
@@ -56,23 +60,14 @@ void drawBufferContents() {
   digitalWrite(LATCH_PIN, HIGH);
 }
 
-void setLED(int row, int col, int color, int on) {
+void setLED(int row, int col, byte color, boolean on) {
 
-  int group = (col * TOTAL_COLS) + row;
-  int index = (group * LEDS_PER_GROUP) + color;
-
-  displayBuffer[index] = on;
+  int i = (col * TOTAL_COLS) + row;  
+    
+  displayBuffer[i] = on ? (displayBuffer[i] | color) : (displayBuffer[i] & ~color);
 }
 
-boolean isOn(int row, int col, int color) {
-
-  int group = (col * TOTAL_COLS) + row;
-  int index = (group * LEDS_PER_GROUP) + color;
-
-  return displayBuffer[index];
-}
-
-void setCol(int col, int color, int on) {
+void setCol(int col, byte color, boolean on) {
 
   for (int i = 0; i < TOTAL_COLS; i++) {
    
@@ -80,7 +75,7 @@ void setCol(int col, int color, int on) {
   }
 }
 
-void setRow(int row, int color, int on) {
+void setRow(int row, byte color, boolean on) {
  
   for (int i = 0; i < TOTAL_COLS; i++) {
    
@@ -90,9 +85,12 @@ void setRow(int row, int color, int on) {
 
 void clearDisplay() {
  
-  for (int i = 0; i < BUFFER_SIZE; i ++) {
+  for (int r = 0; r < TOTAL_ROWS; r++) {
     
-    displayBuffer[i] = 0; 
+    for (int c = 0; c < TOTAL_COLS; c++) {
+      
+      setLED(r, c, RED|BLUE|GREEN, OFF);
+    }      
   }
 }
 
@@ -109,7 +107,7 @@ void setup() {
 }
 
 
-void sayHi(int color) {
+void sayHi(byte color) {
     
     clearDisplay();
     setCol(0, color, 1);
@@ -158,7 +156,7 @@ void colorFill(int spd, int *colors) {
 }
 
 
-void spiral(int spd, int color) {
+void spiral(int spd, byte color) {
 
   const int UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3;
   
@@ -252,19 +250,19 @@ void blinkDisplay(int times, int spd) {
 void loop() {
 
   clearDisplay();  
-  spiral(20, RED);
+  spiral(20, RED|BLUE|GREEN);
   delay(100);
   
   clearDisplay();
-  spiral(20, BLUE);
+  spiral(20, RED|BLUE);
   delay(100);
 
   clearDisplay();  
-  spiral(20, GREEN);
+  spiral(20, BLUE|GREEN);
   delay(100);
   
   clearDisplay();
-  int colors[] = {RED, BLUE, GREEN, RED, BLUE, GREEN, RED, BLUE};
+  int colors[] = {RED, RED|GREEN, GREEN, GREEN|BLUE, BLUE, RED|GREEN|BLUE, RED, RED|GREEN};
   colorFill(10, colors);
   
   blinkDisplay(5, 100);
