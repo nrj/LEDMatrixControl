@@ -35,9 +35,9 @@ void drawBufferContents() {
     
     for (byte c = 0; c < TOTAL_COLS; c++) {
         
-        colROn |= *pixel & RED    ? _BV(c) : 0;
-        colGOn |= *pixel & GREEN  ? _BV(c) : 0;
-        colBOn |= *pixel & BLUE   ? _BV(c) : 0;
+        colROn |= *pixel & RED   ? _BV(c) : 0;
+        colGOn |= *pixel & GREEN ? _BV(c) : 0;
+        colBOn |= *pixel & BLUE  ? _BV(c) : 0;
         
         *pixel++;
     }
@@ -62,9 +62,14 @@ void drawBufferContents() {
 
 void setLED(int row, int col, byte color, boolean on) {
 
-  int i = (col * TOTAL_COLS) + row;  
+  int i = (col * TOTAL_COLS) + row;
     
   displayBuffer[i] = on ? (displayBuffer[i] | color) : (displayBuffer[i] & ~color);
+}
+
+uint8_t* getLED(int row, int col) {
+  
+  return &displayBuffer[(col * TOTAL_COLS) + row];
 }
 
 void setCol(int col, byte color, boolean on) {
@@ -85,12 +90,9 @@ void setRow(int row, byte color, boolean on) {
 
 void clearDisplay() {
  
-  for (int r = 0; r < TOTAL_ROWS; r++) {
-    
-    for (int c = 0; c < TOTAL_COLS; c++) {
-      
-      setLED(r, c, RED|BLUE|GREEN, OFF);
-    }      
+  for (int i = 0; i < BUFFER_SIZE; i++) {
+
+    displayBuffer[i] &= ~(RED|GREEN|BLUE);    
   }
 }
 
@@ -247,23 +249,127 @@ void blinkDisplay(int times, int spd) {
 }
 
 
+void setRowPattern(int row, byte pattern, byte color) {
+  
+  byte colOn = B00000001;
+  
+  for (int c = (TOTAL_COLS - 1); c >= 0; c--) {
+    
+    uint8_t* rgb = getLED(row, c);
+  
+    if ((colOn & pattern) == colOn) {
+      
+      *rgb |= color;
+    }
+    
+    colOn <<= 1; 
+  }
+}
+
+
+void blinkSmile(int times, byte color, int spd) {
+  
+  int timesBlinked = 0;
+  
+  while (timesBlinked < times) {
+    
+    clearDisplay();
+    smileOn(color);
+    delay(spd);
+    
+    clearDisplay();
+    smileOff(color);
+    delay(spd);
+    
+    timesBlinked++;
+  }
+}
+
+void smileOn(byte color) {
+  
+  setRowPattern(0, B00000000, color);
+  setRowPattern(1, B01100110, color);
+  setRowPattern(2, B01100110, color);
+  setRowPattern(3, B00000000, color);
+  setRowPattern(4, B00011000, color);
+  setRowPattern(5, B10011001, color);
+  setRowPattern(6, B01000010, color);
+  setRowPattern(7, B00111100, color);
+}
+
+
+void smileOff(byte color) {
+  
+  setRowPattern(0, B00000000, color);
+  setRowPattern(1, B00000000, color);
+  setRowPattern(2, B01100110, color);
+  setRowPattern(3, B00000000, color);
+  setRowPattern(4, B00011000, color);
+  setRowPattern(5, B10011001, color);
+  setRowPattern(6, B01000010, color);
+  setRowPattern(7, B00111100, color);
+}
+
+
+void checkerboard(byte color1, byte color2, int times, int spd) {
+ 
+  int timesBlinked = 0;
+
+  while (timesBlinked < times) {
+  
+    setRowPattern(0, B11001100, color1);
+    setRowPattern(1, B11001100, color1);
+    setRowPattern(0, B00110011, color2);
+    setRowPattern(1, B00110011, color2);
+    
+    setRowPattern(2, B00110011, color1);
+    setRowPattern(3, B00110011, color1);
+    setRowPattern(2, B11001100, color2);
+    setRowPattern(3, B11001100, color2);
+  
+    setRowPattern(4, B11001100, color1);
+    setRowPattern(5, B11001100, color1);
+    setRowPattern(4, B00110011, color2);
+    setRowPattern(5, B00110011, color2);
+  
+    setRowPattern(6, B00110011, color1);
+    setRowPattern(7, B00110011, color1);  
+    setRowPattern(6, B11001100, color2);
+    setRowPattern(7, B11001100, color2);
+    
+    delay(spd);
+
+    byte tmp = color1;
+    color1 = color2;
+    color2 = tmp;
+    
+    clearDisplay();
+    
+    timesBlinked++;
+  }
+}
+
+
 void loop() {
 
-  clearDisplay();  
-  spiral(20, RED|BLUE|GREEN);
-  delay(100);
+  clearDisplay();
+  int colors[TOTAL_COLS] = {RED, RED|GREEN, GREEN, GREEN|BLUE, BLUE|RED, BLUE, RED|GREEN, RED};
+  colorFill(10, colors);
+  blinkDisplay(3, 100);
+  
+  clearDisplay();
+  spiral(20, RED|GREEN);
+  delay(50);
   
   clearDisplay();
   spiral(20, RED|BLUE);
-  delay(100);
+  delay(50);
 
-  clearDisplay();  
-  spiral(20, BLUE|GREEN);
-  delay(100);
-  
   clearDisplay();
-  int colors[] = {RED, RED|GREEN, GREEN, GREEN|BLUE, BLUE, RED|GREEN|BLUE, RED, RED|GREEN};
-  colorFill(10, colors);
-  
-  blinkDisplay(5, 100);
+  checkerboard(RED, RED|GREEN|BLUE, 25, 100);
+  delay(50);
+
+  clearDisplay();
+  blinkSmile(10, BLUE|GREEN, 70);
+  delay(50);
 } 
